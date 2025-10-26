@@ -1,0 +1,94 @@
+# Actualiza repositorios
+$ sudo apt update
+
+# Instala el servicio Aapache2 
+$ sudo apt install apache2
+
+# Activa el servicio aapche2 
+$ sudo ssytemctl enable apache2
+
+# Ver estatus del servicio 
+$ sudo systemctl status apache2 
+
+# Crea el directorio del primer sitio (ej: sitio1)
+$ sudo mkdir -p /var/www/sitio1
+
+# Asignale permiso de usuario 
+$ sudo chown -R $USER:$USER /var/www/sitio1 
+
+# Crea la pagina y agrega la carpeta sitio1 en ella
+$ echo '<html><head><title>Hola Mundo</title></head><body><h1>Hola Mundo</h1></body></html>' | sudo tee /var/www/sitio1/index.html
+
+# Luego editala
+$ sudo nano /etc/apache2/sites-available/sitio1.conf
+
+# Agrega el contenido 
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/sitio1
+
+    <Directory /var/www/sitio1>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/sitio1_error.log
+    CustomLog ${APACHE_LOG_DIR}/sitio1_access.log combined
+</VirtualHost>
+
+# Habilita la pagina
+$ sudo a2ensite sitio1.conf
+
+# Reinicia el servicio apache
+$ sudo systemctl reload apache2 
+
+# Abre el sitio 
+$ xdg-open http://localhost
+
+
+
+
+--------------------SEGUNDA PAGINA--------------------
+
+# Crea el directorio de la segunda pagina (ej: sitio2)
+sudo mkdir -p /var/www/sito2
+
+# Agrega contenido a dicho directorio y verifica lo que hay: 
+$ cat << 'EOF' | sudo tee /var/www/sitio2/index.html
+<!doctype html>
+<html><head><title>Datos</title></head>
+<body>
+<h1>Nombre: TU_NOMBRE</h1>
+<h2>Matrícula: TU_MATRICULA</h2>
+<h2>Materia: NOMBRE_MATERIA</h2>
+</body></html>
+EOF
+
+
+# Haz que el sitio2 oiga en el puerto 8080
+$ sudo tee /etc/nginx/sites-available/sitio2 >/dev/null <<'EOF'
+server {
+    listen 8080;
+    server_name _;
+    root /var/www/sitio2;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+EOF
+
+# Habilitar el bloque de servidor en Nginx
+$ sudo ln -s /etc/nginx/sites-available/sitio2 /etc/nginx/sites-enabled/
+
+# Reinicia el servicio nginx 
+$ sudo systemctl reload nginx 
+
+# Verifica que nginx esta escuchando dicho puerto 
+$ sudo ss -tlwnp | grep ':8080'
+
+# Abre el sitio2 para ver si todo salio exitoso 
+$ xdg-open http://localhost:8080
+
