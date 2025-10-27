@@ -92,3 +92,33 @@ $ sudo ss -tlwnp | grep ':8080'
 # Abre el sitio2 para ver si todo salio exitoso 
 $ xdg-open http://localhost:8080
 
+
+
+
+
+
+--------------------EN CASO DE QUE NO MUESTRE EL CONTENIDO ESPERADO--------------------
+
+# Este comando elimina el enlace simbólico del sitio default, oculta cualquier error si ya no existe 
+redirigiendo stderr a /dev/null y asegura que la línea no falle gracias a || true
+
+$ sudo unlink /etc/nginx/sites-enabled/default 2>/dev/null || true
+
+
+# Reemplaza en el archivo default de Nginx la directiva con default_server 
+por una línea que solo deja listen 8080; para que no sea el servidor por defecto en ese puerto
+
+$ sudo sed -i 's/listen 8080 default_server;/listen 8080;/' /etc/nginx/sites-available/default
+
+
+# Edita en el archivo default la línea IPv6 que contiene default_server, 
+sustituyéndola por una directiva listen [::]:8080; sin el flag de servidor por defecto
+
+$ sudo sed -i 's/listen \[\:\:\]\:8080 default_server;/listen \[\:\:\]\:8080;/' /etc/nginx/sites-available/default
+
+
+# Reinicia nginx 
+$ sudo systemctl reload nginx 
+
+# Inicia la pagina nuevamente
+$ xdg-open http://sitio2.local:8080/
