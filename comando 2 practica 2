@@ -1,0 +1,44 @@
+# Actualizar repositorios 
+$ 'sudo apt update 
+
+# Instalacion de servicio Postfix 
+$ 'sudo apt install postfix mailutils -y 
+
+Presiona -->
+Ok
+Internet Site
+"System mail name:"  (DEJALO CON EL NOMBRE QUE TE DE) 
+
+# Configuracion de la carpeta Postfix
+$ 'sudo nano /etc/postfix/main.cf
+
+# VALORES A CAMBIAR (EN ORDEN)
+- 'smtp_tls_security_level=encrypt
+- 'relayhost = [smtp.gmail.com]:587
+- 'inet_protocols = ipv4
+
+# Al final de todo agregar: 
+'smtp_use_tls = yes
+'smtp_sasl_auth_enable = yes
+'smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+'smtp_sasl_security_options = noanonymous
+'smtp_sasl_tls_security_options = noanonymous
+'smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+
+# Crea la carpeta que asegure una clave unica del servicio smtp de google 
+$ 'sudo touch /etc/postfix/sasl_passwd
+
+# Genera la clave mediante el link proporcinado en el video "(Para generar la clave)"
+  
+# Edita la carpeta y agrega esta linea
+[smtp.gmail.com]:587 tucorreodegmail:la clave generada
+
+# Restringe dicha carpeta con permisos root
+$ 'sudo postmap /etc/postfix/sasl_passwd && sudo chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+
+# Reinicia el servicio postfix
+$ 'sudo systemctl reload postfix || sudo systemctl restart postfix
+
+# Redacta el correo: 
+$ 'echo "TU_NOMBRE" | mail -s "ASUNTO" CORREO_ELECTRONICO_DEL_DESTINATARIO
+
